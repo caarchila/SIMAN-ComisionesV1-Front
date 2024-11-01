@@ -23,7 +23,7 @@ const Dashboard = () => {
   const [rowData, setRowData] = useState([]);
   const [countries, setCountries] = useState([]);
   const [chains, setChains] = useState([]);
-  const { logout } = useAuth();
+  const { logoutHandler, user } = useAuth();
 
   const [columnDefs, setColumnDefs] = useState([
     { headerName: "Período", field: "periodo", maxWidth: 250, filter: true, resizable: false},
@@ -46,7 +46,7 @@ const Dashboard = () => {
 
   const autoSizeAllColumns = () => {
     const allColumnIds = gridRef.current.columnApi
-      .getAllColumns()
+      .getAllColumns
       .map((column) => column.getId());
     gridRef.current.columnApi.autoSizeColumns(allColumnIds);
   };
@@ -63,15 +63,20 @@ const Dashboard = () => {
   };
   const handleLogout = () => {
     showToast('Sesión cerrada', 'La sesión se ha cerrado correctamente', 'success');
-    logout();
+    logoutHandler();
   };
 
   useEffect(() => {
 
+    console.log(user)
+
     getProcesos().then((data) => {
+      console.log(data);
       setRowData(transformData(data));
       showToast('Procesos cargados', 'Los procesos se han cargado correctamente', 'success');
     }).catch((error) => {
+      console.log(error);
+      
       showToast('Error al cargar procesos', 'No se pudieron cargar los procesos', 'error');
     });
 

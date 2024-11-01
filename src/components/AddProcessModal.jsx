@@ -12,7 +12,6 @@ const AddProcessModal = ({ isOpen, onClose, countries, chains }) => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [processDate, setProcessDate] = useState("");
-  const { user } = useAuth();
   const { showToast } = useToast();
 
   const handleDateChange = (date) => {
@@ -24,16 +23,22 @@ const AddProcessModal = ({ isOpen, onClose, countries, chains }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    const user = localStorage.getItem("user");
+    
+
     if (areDatesInSameMonth(startDate, endDate) === true) {
       const data = {
         cadenaId: selectedChain,
         paisId: selectedCountry,
-        processDate: handleDateChange(processDate),
+        processDate: processDate,
         initialDate: handleDateChange(startDate),
         endDate: handleDateChange(endDate),
         status: "PEN",
-        createId: user.Username,
+        userId: user
       };
+
+      console.log(data);
+      
 
       postProceso(data)
         .then((response) => {
@@ -51,15 +56,14 @@ const AddProcessModal = ({ isOpen, onClose, countries, chains }) => {
             "error"
           );
         });
-
-      isOpen = false;
-      window.location.reload();
+      
     } else if (areDatesInSameMonth(startDate, endDate) === false) {
       showToast(
         "Error",
         "Las fechas de inicio y fin deben estar en el mismo mes",
         "error"
       );
+    
     }
   };
 

@@ -17,9 +17,11 @@ const Login = () => {
     loginRequest(username, password)
     .then((data) => {
       showToast('Inicio de sesión', 'Sesión iniciada correctamente', 'success');
-      login(data); // Call the login function with the token
+      console.log(data);
+      login(data);
     }
     ).catch((error) => {
+      console.log(error);
       showToast('Error de inicio de sesión', 'Usuario o contraseña incorrectos', 'error');
     });
 
@@ -27,8 +29,9 @@ const Login = () => {
 
   useEffect(() => {
     
-    const token = localStorage.getItem('token');
-    if (token) {
+    const session = localStorage.getItem('session');
+
+    if (session) {
       window.location.href = '/dashboard';
     }
 
@@ -49,7 +52,6 @@ const Login = () => {
               Usuario
             </label>
             <input
-              type="text"
               name="usuario"
               id="usuario"
               className="mt-1 p-2 border rounded-md w-full bg-white"

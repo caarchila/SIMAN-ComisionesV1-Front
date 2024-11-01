@@ -1,9 +1,12 @@
+import { BASE_URL } from "./base.api";
+
 async function loginRequest(username, password) {
-    const response = await fetch('http://localhost:8080/usuarios/login', {
+    const response = await fetch(BASE_URL + 'auth/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({ username, password })
     });
 
