@@ -4,7 +4,7 @@ const getProcesos = async () => {
 
     const sessionId = localStorage.getItem('session');
 
-    const response = await fetch('/rrhh-comisiones/procesos/get-procesos', {
+    const response = await fetch('http://localhost:8080/procesos/get-procesos', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

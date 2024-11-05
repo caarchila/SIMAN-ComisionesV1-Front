@@ -5,7 +5,7 @@ const ProtectedRoute = ({ children }) => {
 
     const session = localStorage.getItem('session');
     
-    return session ? children : <Navigate to="/" />;  // Redirect to login if not authenticated
+    return session ? children : <Navigate to="/rrhh-comisiones" />;  // Redirect to login if not authenticated
 };
 
 export default ProtectedRoute;

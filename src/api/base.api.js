@@ -1,3 +1,3 @@
 
-export const BASE_URL = '/rrhh-comisiones';
+export const BASE_URL = 'http://localhost:8080/rrhh-comisiones';
 

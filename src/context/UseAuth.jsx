@@ -38,8 +38,13 @@ export const AuthProvider = ({ children }) => {
         
     };
 
+    const clearSession = () => {
+        localStorage.removeItem('session');
+        localStorage.removeItem('user');
+    };
+
     return (
-        <AuthContext.Provider value={{login, logoutHandler}}>
+        <AuthContext.Provider value={{login, logoutHandler, clearSession}}>
             {children}
         </AuthContext.Provider>
     );

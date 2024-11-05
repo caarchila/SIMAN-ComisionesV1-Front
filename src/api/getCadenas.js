@@ -5,7 +5,7 @@ async function getCadenas() {
     const sessionId = localStorage.getItem('session');
     
     try {
-        const response = await fetch('/rrhh-comisiones/cadenas/get-cadenas',  {
+        const response = await fetch('http://localhost:8080/cadenas/get-cadenas',  {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

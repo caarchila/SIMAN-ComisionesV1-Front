@@ -2,8 +2,10 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faAdd,
+  faEdit,
   faSignOutAlt,
   faTimes,
+  faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../components/AddProcessModal";
 import getProcesos from "../api/getProcesos";
@@ -15,6 +17,8 @@ import getPaises from "../api/getPaises";
 import getCadenas from "../api/getCadenas";
 import useToast from "../hooks/useToast";
 import { useAuth } from "../context/UseAuth";
+import deleteProceso from "../api/deleteProceso";
+import EditProcessModal from "../components/EditProcessModal";
 
 const Dashboard = () => {
 
@@ -23,15 +27,44 @@ const Dashboard = () => {
   const [rowData, setRowData] = useState([]);
   const [countries, setCountries] = useState([]);
   const [chains, setChains] = useState([]);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedProcessData, setSelectedProcessData] = useState({});
   const { logoutHandler, user } = useAuth();
 
+  const ActionCellRenderer = (props) => {
+
+    const { onEditRow, data } = props;
+
+    return (
+      <div className="flex justify-evenly gap-3">
+      <button className=" text-center" onClick={() => editRow(data)}>
+        <FontAwesomeIcon icon={faEdit} className="text-green-900"/>
+      </button>
+      <button className=" text-center" onClick={() => deleteRow(props.data.id)}>
+        <FontAwesomeIcon icon={faTrash} className="text-red-700" />
+      </button>
+      </div>
+    );
+  };
+
   const [columnDefs, setColumnDefs] = useState([
-    { headerName: "Período", field: "periodo", maxWidth: 250, filter: true, resizable: false},
-    { headerName: "Inicio de proceso", field: "fechaProceso",  filter: true, resizable: false},
-    { headerName: "Fecha de fin", field: "fechaFin", filter: true, resizable: false},
-    { headerName: "Cadena", field: "cadena",  filter: true, resizable: false},
-    { headerName: "País", field: "pais",  filter: true, resizable: false},
-    { headerName: "Estado", field: "estado", filter: true, resizable: false},
+    { headerName: "ID", field: "id", maxWidth: 100, filter: true, resizable: false, hide: true },
+    { headerName: "Período", field: "periodo", filter: true, resizable: false, maxWidth: 250 },
+    { headerName: "Inicio de proceso", field: "fechaProceso", maxWidth: 150,  filter: true, resizable: false},
+    { headerName: "Fecha de fin", field: "fechaFin", maxWidth: 150, filter: true, resizable: false},
+    { headerName: "Cadena", field: "cadena", maxWidth: 100,  filter: true, resizable: false},
+    { headerName: "País", field: "pais", filter: true, resizable: false},
+    { headerName: "Estado", field: "estado", maxWidth: 100, filter: true, resizable: false},
+    {
+      headerName: "Actions",
+      cellRenderer: ActionCellRenderer,
+      cellRendererParams: {
+        editRow: editRow, // Ensure this is passed correctly
+
+        deleteRow: deleteRow, // Ensure this is passed correctly
+      },
+      maxWidth: 150
+    },
   ]);
 
   // Reference to the grid API
@@ -53,6 +86,7 @@ const Dashboard = () => {
 
   const transformData = (data) => {
     return data.map((item) => ({
+      id: item.id,
       periodo: `${item.initialDate} - ${item.endDate}`,
       fechaProceso: formatDate(item.processDate),
       fechaFin: item.endDate,
@@ -66,17 +100,33 @@ const Dashboard = () => {
     logoutHandler();
   };
 
-  useEffect(() => {
+  const editRow = (rowData) => {
+    setSelectedProcessData(rowData); // Set the selected process data
+    handleClickOpen(); // Open the modal
+  };
 
-    console.log(user)
+  const handleClickOpen = () => {
+    setEditModalOpen(true);
+  };
+
+  const deleteRow = (id) => {
+    console.log("Deleting row with id:", id);
+
+    deleteProceso(id).then((data) => {
+      showToast('Proceso eliminado', 'El proceso se ha eliminado correctamente', 'success');
+    }).catch((error) => {
+      showToast('Error al eliminar proceso', 'No se pudo eliminar el proceso', 'error');
+    });
+    
+  };
+
+  useEffect(() => {
 
     getProcesos().then((data) => {
       console.log(data);
       setRowData(transformData(data));
       showToast('Procesos cargados', 'Los procesos se han cargado correctamente', 'success');
     }).catch((error) => {
-      console.log(error);
-      
       showToast('Error al cargar procesos', 'No se pudieron cargar los procesos', 'error');
     });
 
@@ -93,7 +143,7 @@ const Dashboard = () => {
     }
     );
 
-  }, []); // Properly place the dependency array here
+  }, []);
   
   return (
     <div className="h-screen bg-white w-full flex flex-col">
@@ -136,13 +186,15 @@ const Dashboard = () => {
               ref={gridRef}
               pagination={true} // Enable pagination
               paginationPageSize={10} // Set page size (number of rows per page)
-              defaultColDef={{ filter: true, sortable: true, resizable: true }}
+              defaultColDef={{ filter: true, sortable: true}}
+              rowHeight={50}
             />
           </div>
         </div>
       </div>
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} countries={countries} chains={chains} />
+      <EditProcessModal isOpen={editModalOpen} onClose={() => setEditModalOpen(false)} process={selectedProcessData} countries={countries} chains={chains} />
     </div>
   );
 };

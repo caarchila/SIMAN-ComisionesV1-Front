@@ -31,6 +31,9 @@ const Login = () => {
     
     const session = localStorage.getItem('session');
 
+    if (session) {
+      clearSession();
+    }
 
 
   }, []);
