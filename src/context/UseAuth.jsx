@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
         try {
             localStorage.setItem('session', data.sessionId);
             localStorage.setItem('user', data.username);
+            window.location.href = '/rrhh-comisiones/dashboard';
             
         } catch (error) {
             console.error("Error decoding token", error);
@@ -28,7 +29,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.removeItem('session');
             localStorage.removeItem('user');
             setTimeout(() => {
-                window.location.href = '/';
+                window.location.href = '/rrhh-comisiones/';
             }, 2000);
 
         } catch (error) {

@@ -1,11 +1,11 @@
-import { BASE_URL, headers } from "./base.api";
+import { BASE_URL} from "./base.api";
 
 async function getCadenas() {
 
     const sessionId = localStorage.getItem('session');
     
     try {
-        const response = await fetch(BASE_URL + '/cadenas/get-cadenas',  {
+        const response = await fetch('/rrhh-comisiones/cadenas/get-cadenas',  {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

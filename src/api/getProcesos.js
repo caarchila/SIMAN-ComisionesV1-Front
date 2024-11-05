@@ -1,10 +1,10 @@
-import { BASE_URL, headers } from "./base.api";
+import { BASE_URL} from "./base.api";
 
 const getProcesos = async () => {
 
     const sessionId = localStorage.getItem('session');
 
-    const response = await fetch('http://localhost:8080/procesos/get-procesos', {
+    const response = await fetch('/rrhh-comisiones/procesos/get-procesos', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

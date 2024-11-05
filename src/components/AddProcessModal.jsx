@@ -22,19 +22,16 @@ const AddProcessModal = ({ isOpen, onClose, countries, chains }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    const user = localStorage.getItem("user");
-    
-
+  
     if (areDatesInSameMonth(startDate, endDate) === true) {
       const data = {
         cadenaId: selectedChain,
         paisId: selectedCountry,
-        processDate: processDate,
+        processDate: handleDateChange(processDate),
         initialDate: handleDateChange(startDate),
         endDate: handleDateChange(endDate),
         status: "PEN",
-        userId: user
+        createId: localStorage.getItem("user")
       };
 
       console.log(data);

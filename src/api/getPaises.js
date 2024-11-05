@@ -1,9 +1,9 @@
-import { BASE_URL, headers } from "./base.api";
+import { BASE_URL } from "./base.api";
 
 async function getPaises() {
     const sessionId = localStorage.getItem('session');
     try {
-        const response = await fetch(BASE_URL + '/paises/get-paises', {
+        const response = await fetch('/rrhh-comisiones/paises/get-paises', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -5,7 +5,7 @@ import loginRequest from "../api/login";
 import useToast from "../hooks/useToast";
 
 const Login = () => {
-  const { login, isAuthenticated } = useAuth();
+  const { login, clearSession} = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const { showToast } = useToast();
@@ -31,9 +31,7 @@ const Login = () => {
     
     const session = localStorage.getItem('session');
 
-    if (session) {
-      window.location.href = '/dashboard';
-    }
+
 
   }, []);
 

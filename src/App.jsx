@@ -15,9 +15,9 @@ function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <>
-        <Route path="/" element={<Login />} />
+        <Route path="/rrhh-comisiones/" element={<Login />} />
         <Route
-          path="/dashboard"
+          path="/rrhh-comisiones/dashboard"
           element={
             <ProtectedRoute>
               <Dashboard />
@@ -25,7 +25,7 @@ function App() {
           }
         />
       </>
-    )
+    ),
   );
 
   return (
