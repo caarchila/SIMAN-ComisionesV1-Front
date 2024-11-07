@@ -1,3 +1,5 @@
+import { BASE_URL } from "./base.api";
+
 async function getProceso(id) {
 
     console.log(id);
@@ -6,7 +8,7 @@ async function getProceso(id) {
     const requestBody = { id }; // This will create { id: 213 }
 
 
-    const response = await fetch("http://localhost:8080/procesos/procesoById", {
+    const response = await fetch("/rrhh-comisiones/procesos/procesoById", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

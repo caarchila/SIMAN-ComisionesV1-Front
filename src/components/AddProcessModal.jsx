@@ -4,15 +4,22 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { postProceso } from "../api/postProceso";
 import { useAuth } from "../context/UseAuth";
 import useToast from "../hooks/useToast";
-import { areDatesInSameMonth } from "../utils/utils";
+import { areDatesInSameMonth, isValidFutureDate } from "../utils/utils";
 
-const AddProcessModal = ({ isOpen, onClose, countries, chains }) => {
+const AddProcessModal = ({ isOpen, onClose, chains }) => {
   const [selectedChain, setSelectedChain] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [processDate, setProcessDate] = useState("");
   const { showToast } = useToast();
+
+  const orgUnits = [
+    { id: 82, description: "El Salvador" },
+    { id: 102, description: "Guatemala" },
+    { id: 110, description: "Nicaragua" },
+    { id: 1074, description: "Costa Rica" }
+  ];
 
   const handleDateChange = (date) => {
     const inputtedDate = new Date(date);
@@ -22,8 +29,8 @@ const AddProcessModal = ({ isOpen, onClose, countries, chains }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-  
-    if (areDatesInSameMonth(startDate, endDate) === true) {
+
+    if (areDatesInSameMonth(startDate, endDate) && isValidFutureDate(processDate)) {
       const data = {
         cadenaId: selectedChain,
         paisId: selectedCountry,
@@ -31,20 +38,18 @@ const AddProcessModal = ({ isOpen, onClose, countries, chains }) => {
         initialDate: handleDateChange(startDate),
         endDate: handleDateChange(endDate),
         status: "PEN",
-        createId: localStorage.getItem("user")
+        createId: localStorage.getItem("user"),
       };
-
-      console.log(data);
-      
 
       postProceso(data)
         .then((response) => {
-          console.log(response);
           showToast(
             "Proceso creado",
             "El proceso se ha creado correctamente",
             "success"
           );
+          onClose();
+          window.location.reload();
         })
         .catch((error) => {
           showToast(
@@ -53,14 +58,18 @@ const AddProcessModal = ({ isOpen, onClose, countries, chains }) => {
             "error"
           );
         });
-      
     } else if (areDatesInSameMonth(startDate, endDate) === false) {
       showToast(
         "Error",
         "Las fechas de inicio y fin deben estar en el mismo mes",
         "error"
       );
-    
+    } else if (isValidFutureDate(processDate) === false) {
+      showToast(
+        "Error",
+        "La fecha de proceso debe ser en el futuro",
+        "error"
+      );
     }
   };
 
@@ -99,9 +108,9 @@ const AddProcessModal = ({ isOpen, onClose, countries, chains }) => {
                 required
               >
                 <option value="">--Seleccione--</option>
-                {countries.map((option) => (
-                  <option key={option.descripcion} value={option.id}>
-                    {option.descripcion}
+                {orgUnits.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.description}
                   </option>
                 ))}
               </select>
@@ -180,13 +189,13 @@ const AddProcessModal = ({ isOpen, onClose, countries, chains }) => {
             </div>
             <div className="p-2 flex items-center justify-between">
               <label
-                htmlFor="endDate"
+                htmlFor="processDate"
                 className="block text-sm font-medium text-gray-700"
               >
                 Fecha de proceso
               </label>
               <input
-                type="date"
+                type="datetime-local"
                 id="processDate"
                 name="processDate"
                 className="p-2 border rounded-md w-2/3 bg-white"
@@ -195,6 +204,7 @@ const AddProcessModal = ({ isOpen, onClose, countries, chains }) => {
                 required
               />
             </div>
+
             {/* Submit Button */}
             <div className="flex justify-end gap-3 w-full mt-3">
               <button

@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = ({ children }) => {
 
-    const session = localStorage.getItem('session');
+    const session = sessionStorage.getItem('session');
     
     return session ? children : <Navigate to="/rrhh-comisiones" />;  // Redirect to login if not authenticated
 };

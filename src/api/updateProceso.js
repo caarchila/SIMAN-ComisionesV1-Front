@@ -1,5 +1,7 @@
+import { BASE_URL } from "./base.api";
+
 async function updateProceso(data) {
-    const response = await fetch('http://localhost:8080/procesos/update', {
+    const response = await fetch('/rrhh-comisiones/procesos/update', {
         method: 'PUT',
         credentials: 'include',
         headers: {

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faAdd,
@@ -12,7 +12,7 @@ import getProcesos from "../api/getProcesos";
 import { AgGridReact } from "ag-grid-react"; // React Data Grid Component
 import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "ag-grid-community/styles/ag-theme-quartz.css";
-import { formatDate } from "../utils/utils";
+import {formatDateHours, formatDateNoHours } from "../utils/utils";
 import getPaises from "../api/getPaises";
 import getCadenas from "../api/getCadenas";
 import useToast from "../hooks/useToast";
@@ -33,7 +33,7 @@ const Dashboard = () => {
 
   const ActionCellRenderer = (props) => {
 
-    const { onEditRow, data } = props;
+    const {data} = props;
 
     return (
       <div className="flex justify-evenly gap-3">
@@ -47,23 +47,49 @@ const Dashboard = () => {
     );
   };
 
+  const editRow = (rowData) => {
+    
+    if (rowData.estado === "PEN") {
+      setSelectedProcessData(rowData); // Set the selected process data
+      handleClickOpen(); // Open the modal
+    } else {
+      showToast('Error', 'No se puede editar un proceso en estado diferente a PENDIENTE', 'error');
+    
+    }
+  };
+
+  const handleClickOpen = () => {
+    setEditModalOpen(true);
+  };
+
+  const deleteRow = (id) => {
+
+    deleteProceso(id).then((data) => {
+      showToast('Proceso eliminado', 'El proceso se ha eliminado correctamente', 'success');
+      window.location.reload();
+    }).catch((error) => {
+      showToast('Error al eliminar proceso', 'No se pudo eliminar el proceso', 'error');
+    });
+    
+  };
+
   const [columnDefs, setColumnDefs] = useState([
-    { headerName: "ID", field: "id", maxWidth: 100, filter: true, resizable: false, hide: true },
-    { headerName: "Período", field: "periodo", filter: true, resizable: false, maxWidth: 250 },
-    { headerName: "Inicio de proceso", field: "fechaProceso", maxWidth: 150,  filter: true, resizable: false},
-    { headerName: "Fecha de fin", field: "fechaFin", maxWidth: 150, filter: true, resizable: false},
-    { headerName: "Cadena", field: "cadena", maxWidth: 100,  filter: true, resizable: false},
-    { headerName: "País", field: "pais", filter: true, resizable: false},
-    { headerName: "Estado", field: "estado", maxWidth: 100, filter: true, resizable: false},
+    { headerName: "ID", field: "id", filter: true, hide: true, flex: 1 },
+    { headerName: "Período", field: "periodo", filter: true, flex: 2 },
+    { headerName: "Inicio de proceso", field: "fechaProceso", filter: true, flex: 2 },
+    { headerName: "Fecha de fin", field: "fechaFin", filter: true, hide: true, flex: 1 },
+    { headerName: "Cadena", field: "cadena", filter: true, flex: 2 },
+    { headerName: "País", field: "pais", filter: true, flex: 3 },
+    { headerName: "Estado", field: "estado", filter: true, flex: 1 },
     {
       headerName: "Actions",
       cellRenderer: ActionCellRenderer,
       cellRendererParams: {
-        editRow: editRow, // Ensure this is passed correctly
-
-        deleteRow: deleteRow, // Ensure this is passed correctly
+        editRow: editRow,
+        deleteRow: deleteRow,
       },
-      maxWidth: 150
+      
+      flex: 1,
     },
   ]);
 
@@ -72,24 +98,16 @@ const Dashboard = () => {
 
   // Auto-size columns to fit content
   const onGridReady = (params) => {
-    gridRef.current = params.api;
-    params.api.sizeColumnsToFit(); // Makes the columns fit the grid width initially
-    autoSizeAllColumns(); // Adjusts each column based on content
-  };
-
-  const autoSizeAllColumns = () => {
-    const allColumnIds = gridRef.current.columnApi
-      .getAllColumns
-      .map((column) => column.getId());
-    gridRef.current.columnApi.autoSizeColumns(allColumnIds);
+    const allColumnIds = params.columnApi.getAllColumns().map((col) => col.getId());
+    params.columnApi.autoSizeColumns(allColumnIds);
   };
 
   const transformData = (data) => {
     return data.map((item) => ({
       id: item.id,
-      periodo: `${item.initialDate} - ${item.endDate}`,
-      fechaProceso: formatDate(item.processDate),
-      fechaFin: item.endDate,
+      periodo: `${formatDateNoHours(item.initialDate)} - ${formatDateNoHours(item.endDate)}`,
+      fechaProceso: formatDateHours(item.processDate),
+      fechaFin: formatDateNoHours(item.endDate),
       cadena: item.nombreCadena,
       pais: item.nombrePais,
       estado: item.status,
@@ -100,40 +118,13 @@ const Dashboard = () => {
     logoutHandler();
   };
 
-  const editRow = (rowData) => {
-    setSelectedProcessData(rowData); // Set the selected process data
-    handleClickOpen(); // Open the modal
-  };
-
-  const handleClickOpen = () => {
-    setEditModalOpen(true);
-  };
-
-  const deleteRow = (id) => {
-    console.log("Deleting row with id:", id);
-
-    deleteProceso(id).then((data) => {
-      showToast('Proceso eliminado', 'El proceso se ha eliminado correctamente', 'success');
-    }).catch((error) => {
-      showToast('Error al eliminar proceso', 'No se pudo eliminar el proceso', 'error');
-    });
-    
-  };
-
   useEffect(() => {
 
     getProcesos().then((data) => {
-      console.log(data);
       setRowData(transformData(data));
       showToast('Procesos cargados', 'Los procesos se han cargado correctamente', 'success');
     }).catch((error) => {
       showToast('Error al cargar procesos', 'No se pudieron cargar los procesos', 'error');
-    });
-
-    getPaises().then((data) => {
-      setCountries(data);
-    }).catch((error) => {
-      showToast('Error al cargar países', 'No se pudieron cargar los países', 'error');
     });
 
     getCadenas().then((data) => {
@@ -182,7 +173,6 @@ const Dashboard = () => {
             <AgGridReact
               rowData={rowData}
               columnDefs={columnDefs}
-              onGridReady={onGridReady}
               ref={gridRef}
               pagination={true} // Enable pagination
               paginationPageSize={10} // Set page size (number of rows per page)
@@ -193,7 +183,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} countries={countries} chains={chains} />
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} chains={chains} />
       <EditProcessModal isOpen={editModalOpen} onClose={() => setEditModalOpen(false)} process={selectedProcessData} countries={countries} chains={chains} />
     </div>
   );

@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = (data) => {
         try {
-            localStorage.setItem('session', data.sessionId);
+            sessionStorage.setItem('session', data.sessionId);
             localStorage.setItem('user', data.username);
             window.location.href = '/rrhh-comisiones/dashboard';
             
@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
 
         try {
             logout();
-            localStorage.removeItem('session');
+            sessionStorage.removeItem('session');
             localStorage.removeItem('user');
             setTimeout(() => {
                 window.location.href = '/rrhh-comisiones/';
@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const clearSession = () => {
-        localStorage.removeItem('session');
+        sessionStorage.removeItem('session');
         localStorage.removeItem('user');
     };
 

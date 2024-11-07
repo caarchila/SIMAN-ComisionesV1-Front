@@ -17,7 +17,6 @@ const Login = () => {
     loginRequest(username, password)
     .then((data) => {
       showToast('Inicio de sesión', 'Sesión iniciada correctamente', 'success');
-      console.log(data);
       login(data);
     }
     ).catch((error) => {
@@ -29,9 +28,10 @@ const Login = () => {
 
   useEffect(() => {
     
-    const session = localStorage.getItem('session');
+    const session = sessionStorage.getItem('session');
 
     if (session) {
+      sessionStorage.removeItem('session');
       clearSession();
     }
 

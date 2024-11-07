@@ -1,5 +1,7 @@
+import { BASE_URL } from "./base.api";
+
 async function deleteProceso(id) {
-    const response = await fetch(`http://localhost:8080/procesos/delete`, {
+    const response = await fetch( `http://localhost:8080/procesos/delete`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json'

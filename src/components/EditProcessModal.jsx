@@ -22,8 +22,14 @@ const EditProcessModal = ({
   const [processId, setProcessId] = useState();
   const { showToast } = useToast();
 
+  const orgUnits = [
+    { id: 82, description: "El Salvador" },
+    { id: 102, description: "Guatemala" },
+    { id: 110, description: "Nicaragua" },
+    { id: 1074, description: "Costa Rica" }
+  ];
+
   useEffect(() => {
-    console.log(process);
 
     if (process.status !== "PEN") {
       getProceso(process)
@@ -79,8 +85,17 @@ const EditProcessModal = ({
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+};
+
+const convertToTimestamp = (dateString) => {
+  const date = new Date(dateString);
+  return date.getTime();
+};
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -90,31 +105,28 @@ const EditProcessModal = ({
         id: processId,
         cadenaId: selectedChain,
         paisId: selectedCountry,
-        processDate: handleDateChange(processDate),
+        processDate: convertToTimestamp(processDate),
         initialDate: handleDateChange(startDate),
         endDate: handleDateChange(endDate),
         createId: localStorage.getItem("user"),
       };
-
       updateProceso(data)
         .then((response) => {
-          console.log(response);
           showToast(
             "Proceso actualizado",
             "El proceso se ha actualizado correctamente",
             "success"
           );
+          window.location.reload();
+          onClose();        
         })
         .catch((error) => {
-          console.log(error);
           showToast(
             "Error",
             "Ha ocurrido un error al actualizar el proceso",
             "error"
           );
         });
-
-      onClose();
     } else {
       showToast("error", "Las fechas no están en el mismo mes", "error");
     }
@@ -151,9 +163,9 @@ const EditProcessModal = ({
                 required
               >
                 <option value="">--Seleccione--</option>
-                {countries.map((option) => (
-                  <option key={option.descripcion} value={option.id}>
-                    {option.descripcion}
+                {orgUnits.map((option) => (
+                  <option key={option.description} value={option.id}>
+                    {option.description}
                   </option>
                 ))}
               </select>
@@ -235,7 +247,7 @@ const EditProcessModal = ({
                 Fecha de proceso
               </label>
               <input
-                type="date"
+                type="datetime-local"
                 id="processDate"
                 name="processDate"
                 className="p-2 border rounded-md w-2/3 bg-white"
