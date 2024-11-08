@@ -1,4 +1,4 @@
-import { BASE_URL} from "./base.api";
+import { BASE_URL, BASE_URL_SERVER} from "./base.api";
 
 export async function postProceso(data) {
     const response = await fetch("/rrhh-comisiones/procesos/save",  {
@@ -10,7 +10,7 @@ export async function postProceso(data) {
         body: JSON.stringify( data ) // 
     });
     if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error('Ocurrió un error al guardar el proceso');
     }
 
     return response.json();

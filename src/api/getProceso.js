@@ -1,4 +1,4 @@
-import { BASE_URL } from "./base.api";
+import { BASE_URL, BASE_URL_SERVER } from "./base.api";
 
 async function getProceso(id) {
 
@@ -18,7 +18,7 @@ async function getProceso(id) {
     });
 
     if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error('Ocurrió un error al obtener el proceso');
     }
 
     return response.json();

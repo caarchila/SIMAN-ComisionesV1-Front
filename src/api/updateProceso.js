@@ -1,7 +1,7 @@
-import { BASE_URL } from "./base.api";
+import { BASE_URL, BASE_URL_SERVER } from "./base.api";
 
 async function updateProceso(data) {
-    const response = await fetch('/rrhh-comisiones/procesos/update', {
+    const response = await fetch("/rrhh-comisiones/procesos/update", {
         method: 'PUT',
         credentials: 'include',
         headers: {
@@ -11,7 +11,7 @@ async function updateProceso(data) {
     });
 
     if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error('Ocurrió un error al actualizar el proceso');
     }
 
     return response.json();

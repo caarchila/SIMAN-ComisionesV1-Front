@@ -40,7 +40,7 @@ const Dashboard = () => {
       <button className=" text-center" onClick={() => editRow(data)}>
         <FontAwesomeIcon icon={faEdit} className="text-green-900"/>
       </button>
-      <button className=" text-center" onClick={() => deleteRow(props.data.id)}>
+      <button className=" text-center" onClick={() => deleteRow(data)}>
         <FontAwesomeIcon icon={faTrash} className="text-red-700" />
       </button>
       </div>
@@ -62,9 +62,17 @@ const Dashboard = () => {
     setEditModalOpen(true);
   };
 
-  const deleteRow = (id) => {
+  const deleteRow = (rowData) => {
 
-    deleteProceso(id).then((data) => {
+    console.log(rowData);
+    
+    
+    if (rowData.estado !== "PEN") {
+      showToast('Error', 'No se puede eliminar un proceso en estado diferente a PENDIENTE', 'error');
+      return;  
+    }
+
+    deleteProceso(rowData.id).then((data) => {
       showToast('Proceso eliminado', 'El proceso se ha eliminado correctamente', 'success');
       window.location.reload();
     }).catch((error) => {
@@ -72,15 +80,27 @@ const Dashboard = () => {
     });
     
   };
-
+  
   const [columnDefs, setColumnDefs] = useState([
-    { headerName: "ID", field: "id", filter: true, hide: true, flex: 1 },
-    { headerName: "Período", field: "periodo", filter: true, flex: 2 },
-    { headerName: "Inicio de proceso", field: "fechaProceso", filter: true, flex: 2 },
-    { headerName: "Fecha de fin", field: "fechaFin", filter: true, hide: true, flex: 1 },
-    { headerName: "Cadena", field: "cadena", filter: true, flex: 2 },
-    { headerName: "País", field: "pais", filter: true, flex: 3 },
-    { headerName: "Estado", field: "estado", filter: true, flex: 1 },
+    { headerName: "ID", field: "id", filter: true, hide: true, flex: 1, resizable: false },
+    { headerName: "Período", field: "periodo", filter: true, flex: 2, resizable: false },
+    { 
+      headerName: "Inicio de proceso",
+      field: "fechaProceso",
+      filter: 'agDateColumnFilter', // Use the date filter
+      flex: 2,
+      resizable: false,
+    },
+    { headerName: "Fecha de fin", field: "fechaFin", filter: true, hide: true, flex: 1, resizable: false },
+    { headerName: "Cadena", field: "cadena", filter: true, flex: 2, resizable: false },
+    { headerName: "País", field: "pais", filter: true, flex: 3, resizable: false },
+    { 
+      headerName: "Estado", 
+      field: "estado", 
+      //filter: 'agTextColumnFilter', // Use text filter
+      flex: 1, 
+      resizable: false,
+    },
     {
       headerName: "Actions",
       cellRenderer: ActionCellRenderer,
@@ -88,19 +108,14 @@ const Dashboard = () => {
         editRow: editRow,
         deleteRow: deleteRow,
       },
-      
       flex: 1,
+      resizable: false,
     },
   ]);
+  
 
   // Reference to the grid API
   const gridRef = useRef();
-
-  // Auto-size columns to fit content
-  const onGridReady = (params) => {
-    const allColumnIds = params.columnApi.getAllColumns().map((col) => col.getId());
-    params.columnApi.autoSizeColumns(allColumnIds);
-  };
 
   const transformData = (data) => {
     return data.map((item) => ({
@@ -120,15 +135,18 @@ const Dashboard = () => {
 
   useEffect(() => {
 
-    getProcesos().then((data) => {
-      setRowData(transformData(data));
-      showToast('Procesos cargados', 'Los procesos se han cargado correctamente', 'success');
-    }).catch((error) => {
-      showToast('Error al cargar procesos', 'No se pudieron cargar los procesos', 'error');
-    });
+    getProcesos().then((response) => {
+      if(response.status === 401) {
+        showToast('Error', 'Su sesión ha expirado', 'error');
+        logoutHandler();
+      }
 
-    getCadenas().then((data) => {
-      setChains(data);
+      setRowData(transformData(response.data));
+      showToast('Procesos cargados', 'Los procesos se han cargado correctamente', 'success');
+    })
+
+    getCadenas().then((response) => {
+      setChains(response.data);
     }).catch((error) => {
       showToast('Error al cargar cadenas', 'No se pudieron cargar las cadenas', 'error');
     }

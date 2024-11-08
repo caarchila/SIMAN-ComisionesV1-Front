@@ -1,8 +1,8 @@
-import { BASE_URL } from "./base.api";
+import { BASE_URL, BASE_URL_SERVER } from "./base.api";
 
 async function getPaises() {
     try {
-        const response = await fetch('http://localhost:8080/paises/get-paises', {
+        const response = await fetch("/rrhh-comisiones/paises/get-paises", {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -10,13 +10,13 @@ async function getPaises() {
             credentials: "include",
         });
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error('Ocurrió un error al obtener los paises');
         }
         const data = await response.json();
         
         return data;
     } catch (error) {
-        console.error('There has been a problem with your fetch operation:', error);
+        console.error('Error en la petición getPaises', error);
     }
 }
 

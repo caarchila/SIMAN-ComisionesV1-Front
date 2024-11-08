@@ -21,6 +21,26 @@ export const formatDateNoHours = (dateString) => {
   return `${year}/${month}/${day}`;
 };
 
+export function parseDateTimeLocal(dateTimeString) {
+  // Split the string into date and time parts
+  const [datePart, timePart] = dateTimeString.split("T");
+
+  // Split date and time into individual components
+  const [year, month, day] = datePart.split("-");
+  const [hours, minutes] = timePart.split(":");
+
+  // Create a new Date object with the parsed values
+  const parsedDate = new Date(
+    year,
+    month - 1, // Months are zero-indexed in JavaScript Date
+    day,
+    hours,
+    minutes
+  );
+
+  return parsedDate;
+}
+
 // Helper function to know if two dates are in the same month
 export function areDatesInSameMonth(date1, date2) {
   // Split the date strings to extract year and month

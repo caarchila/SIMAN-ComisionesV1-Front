@@ -27,6 +27,8 @@ const Login = () => {
   };
 
   useEffect(() => {
+
+    console.log('versión nueva, sise puede borrar :)');
     
     const session = sessionStorage.getItem('session');
 

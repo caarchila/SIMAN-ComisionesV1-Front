@@ -1,7 +1,10 @@
-import { BASE_URL } from "./base.api";
+import { BASE_URL, BASE_URL_SERVER } from "./base.api";
 
 async function deleteProceso(id) {
-    const response = await fetch( `http://localhost:8080/procesos/delete`, {
+
+    console.log(id);
+    
+    const response = await fetch("/rrhh-comisiones/procesos/delete", {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json'
@@ -11,7 +14,7 @@ async function deleteProceso(id) {
     });
 
     if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error('Ocurrió un error al eliminar el proceso');
     }
 
     return await response.json();

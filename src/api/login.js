@@ -1,7 +1,7 @@
-import { BASE_URL } from "./base.api";
+import { BASE_URL, BASE_URL_SERVER } from "./base.api";
 
 async function loginRequest(username, password) {
-    const response = await fetch('http://localhost:8080/auth/login', {
+    const response = await fetch("/rrhh-comisiones/auth/login", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -11,7 +11,7 @@ async function loginRequest(username, password) {
     });
 
     if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error('Ocurrió un error al iniciar sesión');
     }
 
     const data = await response.json();
