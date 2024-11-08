@@ -11,10 +11,11 @@ export const useAuth = () => {
 // AuthProvider component to wrap your app
 export const AuthProvider = ({ children }) => {
 
-    const login = (data) => {
+    const login = (response) => {
         try {
-            sessionStorage.setItem('session', data.sessionId);
-            localStorage.setItem('user', data.username);
+            
+            sessionStorage.setItem('session', response.data.sessionId);
+            localStorage.setItem('user', response.data.username);
             window.location.href = '/rrhh-comisiones/dashboard';
             
         } catch (error) {

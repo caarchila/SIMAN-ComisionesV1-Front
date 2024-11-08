@@ -1,4 +1,4 @@
-import { BASE_URL, BASE_URL_SERVER} from "./base.api";
+import { BASE_URL} from "./base.api";
 
 async function getCadenas() {
     
