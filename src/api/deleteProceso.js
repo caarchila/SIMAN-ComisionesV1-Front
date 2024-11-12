@@ -1,16 +1,13 @@
-import { BASE_URL, BASE_URL_SERVER } from "./base.api";
+import { BASE_URL } from "./base.api";
 
 async function deleteProceso(id) {
 
-    console.log(id);
-    
-    const response = await fetch("/rrhh-comisiones/procesos/delete", {
+    const response = await fetch(`/rrhh-comisiones/procesos/delete/${id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json'
         },
-        credentials: "include",
-        body: JSON.stringify({ id }), 
+        credentials: "include"
     });
 
     if (!response.ok) {

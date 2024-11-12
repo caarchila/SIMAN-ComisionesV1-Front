@@ -1,10 +1,20 @@
 import React, { useState } from "react";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faCalendar, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { postProceso } from "../api/postProceso";
 import { useAuth } from "../context/UseAuth";
 import useToast from "../hooks/useToast";
-import { areDatesInSameMonth, formatDateHours, isValidFutureDate, parseDateTimeLocal } from "../utils/utils";
+import {
+  areDatesInSameMonth,
+  formatDateHours,
+  isDateBefore,
+  isValidFutureDate,
+  parseDateTimeLocal,
+} from "../utils/utils";
+import DatePicker, { registerLocale } from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { format, parseISO, addDays } from "date-fns";
+import { es } from "date-fns/locale"; // Import Spanish locale
 
 const AddProcessModal = ({ isOpen, onClose, chains }) => {
   const [selectedChain, setSelectedChain] = useState("");
@@ -12,26 +22,39 @@ const AddProcessModal = ({ isOpen, onClose, chains }) => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [processDate, setProcessDate] = useState("");
+  registerLocale("es", es);
+
   const { showToast } = useToast();
 
   const orgUnits = [
     { id: 82, description: "El Salvador" },
     { id: 102, description: "Guatemala" },
     { id: 110, description: "Nicaragua" },
-    { id: 1074, description: "Costa Rica" }
+    { id: 1074, description: "Costa Rica" },
   ];
 
   const handleDateChange = (date) => {
-    const inputtedDate = new Date(date);
-    const formattedDate = inputtedDate.setDate(inputtedDate.getDate() + 1);
-    return formattedDate;
+    // Add 1 day to the stored date and return it
+    const nextDay = addDays(date, 1);
+    console.log(nextDay);
+
+    return nextDay;
   };
 
+  const handleDateInput = (date) => {
+    // Format the date as 'yyyy-MM-dd' directly for storage
+    const formattedDate = format(date, "yyyy-MM-dd");
+    setStartDate(formattedDate);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (areDatesInSameMonth(startDate, endDate) && isValidFutureDate(processDate)) {
+    if (
+      areDatesInSameMonth(startDate, endDate) &&
+      isValidFutureDate(processDate) &&
+      isDateBefore(startDate, endDate)
+    ) {
       const data = {
         cadenaId: selectedChain,
         paisId: selectedCountry,
@@ -43,11 +66,11 @@ const AddProcessModal = ({ isOpen, onClose, chains }) => {
       };
 
       console.log(formatDateHours(data.processDate));
-      
+
       postProceso(data)
         .then((response) => {
           console.log(response);
-          
+
           showToast(
             "Proceso creado",
             "El proceso se ha creado correctamente",
@@ -70,9 +93,11 @@ const AddProcessModal = ({ isOpen, onClose, chains }) => {
         "error"
       );
     } else if (isValidFutureDate(processDate) === false) {
+      showToast("Error", "La fecha de proceso debe ser en el futuro", "error");
+    } else if (isDateBefore(startDate, endDate) === false) {
       showToast(
         "Error",
-        "La fecha de proceso debe ser en el futuro",
+        "La fecha de inicio debe ser anterior a la fecha de fin",
         "error"
       );
     }
@@ -155,7 +180,7 @@ const AddProcessModal = ({ isOpen, onClose, chains }) => {
               </label>
 
               {/* Date Inputs */}
-              <div className="w-full md:w-2/3 flex flex-col md:flex lg:flex-row justify-between gap-3">
+              <div className="w-full md:w-2/3 flex flex-col md:flex lg:flex-row justify-between gap-3 mb-1">
                 <div className="w-full flex md:flex-col justify-between md:w-full">
                   <label
                     htmlFor="startDate"
@@ -163,13 +188,13 @@ const AddProcessModal = ({ isOpen, onClose, chains }) => {
                   >
                     Fecha de inicio
                   </label>
-                  <input
-                    type="date"
-                    id="startDate"
-                    name="startDate"
+                  <DatePicker
+                    locale="es" // Set locale to Spanish
+                    selected={startDate ? parseISO(startDate) : null} // Only parse if there's a valid date
+                    onChange={handleDateInput}
+                    dateFormat="dd/MM/yyyy" // Display format: dd/mm/yyyy
+                    placeholderText="dd/mm/yyyy" // Placeholder text
                     className="p-2 border rounded-md w-2/3 md:w-full bg-white"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
                     required
                   />
                 </div>
@@ -180,32 +205,39 @@ const AddProcessModal = ({ isOpen, onClose, chains }) => {
                   >
                     Fecha de cierre
                   </label>
-                  <input
-                    type="date"
-                    id="endDate"
-                    name="endDate"
+                  <DatePicker
+                    locale="es" // Set locale to Spanish
+                    selected={endDate ? parseISO(endDate) : null} // Only parse if there's a valid date
+                    onChange={(date) => setEndDate(format(date, "yyyy-MM-dd"))}
+                    dateFormat="dd/MM/yyyy" // Display format: dd/mm/yyyy
+                    placeholderText="dd/mm/yyyy"
                     className="p-2 border rounded-md w-2/3 md:w-full bg-white"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
                     required
                   />
                 </div>
               </div>
             </div>
-            <div className="p-2 flex items-center justify-between">
+            <div className="p-2 flex items-center w-full space-x-44">
+              {" "}
+              {/* Use space-x-4 for spacing */}
               <label
                 htmlFor="processDate"
                 className="block text-sm font-medium text-gray-700"
               >
                 Fecha de proceso
               </label>
-              <input
-                type="datetime-local"
-                id="processDate"
-                name="processDate"
-                className="p-2 border rounded-md w-2/3 bg-white"
-                value={processDate}
-                onChange={(e) => setProcessDate(e.target.value)}
+              <DatePicker
+                locale="es" // Set locale to Spanish
+                selected={processDate ? parseISO(processDate) : null}
+                onChange={(date) =>
+                  setProcessDate(format(date, "yyyy-MM-dd'T'HH:mm"))
+                }
+                showTimeSelect
+                timeFormat="HH:mm aa"
+                timeIntervals={1}
+                dateFormat="dd/MM/yyyy HH:mm aa"
+                placeholderText="dd/mm/yyyy HH:mm"
+                className="p-2 border rounded-md bg-white full-width" // Ensure DatePicker takes full width
                 required
               />
             </div>

@@ -7,7 +7,7 @@ export const formatDateHours = (dateString) => {
   const hours = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
 
-  return `${year}/${month}/${day} ${hours}:${minutes}`;
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
 };
 
 export const formatDateNoHours = (dateString) => {
@@ -18,7 +18,7 @@ export const formatDateNoHours = (dateString) => {
   const hours = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
 
-  return `${year}/${month}/${day}`;
+  return `${day}/${month}/${year}`;
 };
 
 export function parseDateTimeLocal(dateTimeString) {
@@ -43,6 +43,10 @@ export function parseDateTimeLocal(dateTimeString) {
 
 // Helper function to know if two dates are in the same month
 export function areDatesInSameMonth(date1, date2) {
+  console.log(date1);
+  console.log(date2);
+  
+  
   // Split the date strings to extract year and month
   const [year1, month1] = date1.split('-');
   const [year2, month2] = date2.split('-');
@@ -61,4 +65,12 @@ export function isValidFutureDate(selectedDateTime) {
 
   // Check if the selected date is in the future
   return selectedDate > now;
+}
+
+// Helper function to check if date1 is before date2
+export function isDateBefore(date1, date2) {
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+
+  return d1 < d2;
 }

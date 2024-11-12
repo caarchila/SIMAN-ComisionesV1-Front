@@ -28,7 +28,7 @@ const Login = () => {
 
   useEffect(() => {
 
-    console.log('versión nueva, sise puede borrar :)');
+    console.log('borrado con endpoint nuevo xD');
     
     const session = sessionStorage.getItem('session');
 

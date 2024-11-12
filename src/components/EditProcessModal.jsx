@@ -2,9 +2,11 @@ import React, { useState, useEffect } from "react";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import useToast from "../hooks/useToast";
-import { areDatesInSameMonth } from "../utils/utils";
+import { areDatesInSameMonth, isDateBefore, isValidFutureDate } from "../utils/utils";
 import getProceso from "../api/getProceso";
 import updateProceso from "../api/updateProceso";
+import DatePicker, { registerLocale } from "react-datepicker";
+import { es, is } from "date-fns/locale"; // Import Spanish locale
 
 const EditProcessModal = ({
   isOpen,
@@ -21,16 +23,16 @@ const EditProcessModal = ({
   const [processDate, setProcessDate] = useState(process?.processDate || "");
   const [processId, setProcessId] = useState();
   const { showToast } = useToast();
+  registerLocale("es", es);
 
   const orgUnits = [
     { id: 82, description: "El Salvador" },
     { id: 102, description: "Guatemala" },
     { id: 110, description: "Nicaragua" },
-    { id: 1074, description: "Costa Rica" }
+    { id: 1074, description: "Costa Rica" },
   ];
 
   useEffect(() => {
-
     if (process.status !== "PEN") {
       getProceso(process)
         .then((data) => {
@@ -89,18 +91,19 @@ const EditProcessModal = ({
     const minutes = String(date.getMinutes()).padStart(2, "0");
     const seconds = String(date.getSeconds()).padStart(2, "0");
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-};
+  };
 
-const convertToTimestamp = (dateString) => {
-  const date = new Date(dateString);
-  return date.getTime();
-};
-
+  const convertToTimestamp = (dateString) => {
+    const date = new Date(dateString);
+    return date.getTime();
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (areDatesInSameMonth(startDate, endDate)) {
+    if (areDatesInSameMonth(startDate, endDate) &&
+    isDateBefore(startDate, endDate) && 
+    isValidFutureDate(processDate)) {
       const data = {
         id: processId,
         cadenaId: selectedChain,
@@ -118,7 +121,7 @@ const convertToTimestamp = (dateString) => {
             "success"
           );
           window.location.reload();
-          onClose();        
+          onClose();
         })
         .catch((error) => {
           showToast(
@@ -127,8 +130,14 @@ const convertToTimestamp = (dateString) => {
             "error"
           );
         });
-    } else {
+    } else if (areDatesInSameMonth(startDate, endDate) === false) {
       showToast("error", "Las fechas no están en el mismo mes", "error");
+    }
+    else if (isDateBefore(startDate, endDate) === false) {
+      showToast("error", "La fecha de inicio debe ser anterior a la fecha de fin", "error");
+    }
+    else if (isValidFutureDate(processDate) === false) {
+      showToast("error", "La fecha de proceso debe ser en el futuro", "error");
     }
   };
 
@@ -209,13 +218,19 @@ const convertToTimestamp = (dateString) => {
                   >
                     Fecha de inicio
                   </label>
-                  <input
-                    type="date"
-                    id="startDate"
-                    name="startDate"
+                  <DatePicker
+                    locale="es"
+                    selected={
+                      startDate ? new Date(startDate + "T00:00:00") : null
+                    }
+                    onChange={(date) => {
+                      if (date && !isNaN(date.getTime())) {
+                        // check if the date is valid
+                        setStartDate(date.toISOString().split("T")[0]); // format as "YYYY-MM-DD" if needed
+                      }
+                    }}
                     className="p-2 border rounded-md w-2/3 md:w-full bg-white"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
+                    dateFormat="dd/MM/yyyy"
                     required
                   />
                 </div>
@@ -226,33 +241,54 @@ const convertToTimestamp = (dateString) => {
                   >
                     Fecha de cierre
                   </label>
-                  <input
-                    type="date"
+                  <DatePicker
+                  locale="es"
+                    selected={endDate ? new Date(endDate + "T00:00:00") : null}
                     id="endDate"
                     name="endDate"
                     className="p-2 border rounded-md w-2/3 md:w-full bg-white"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
+                    onChange={(date) => {
+                      if (date && !isNaN(date.getTime())) {
+                        // check if the date is valid
+                        setEndDate(date.toISOString().split("T")[0]); // format as "YYYY-MM-DD" if needed
+                      }
+                    }}
+                    dateFormat="dd/MM/yyyy"
                     required
                   />
                 </div>
               </div>
             </div>
 
-            <div className="p-2 flex items-center justify-between">
+            <div className="p-2 flex items-center w-full space-x-44">
               <label
                 htmlFor="processDate"
                 className="block text-sm font-medium text-gray-700"
               >
                 Fecha de proceso
               </label>
-              <input
-                type="datetime-local"
-                id="processDate"
-                name="processDate"
-                className="p-2 border rounded-md w-2/3 bg-white"
-                value={processDate}
-                onChange={(e) => setProcessDate(e.target.value)}
+
+              <DatePicker
+              locale="es"
+                selected={processDate ? new Date(processDate) : null}
+                onChange={(date) => {
+                  if (date) {
+                    // Convert the selected date to a local datetime string in "YYYY-MM-DDTHH:MM" format
+                    const localDateTime = new Date(
+                      date.getTime() - date.getTimezoneOffset() * 60000
+                    )
+                      .toISOString()
+                      .slice(0, 16);
+
+                    setProcessDate(localDateTime);
+                  }
+                }}
+                className="p-2 border rounded-md bg-white full-width"
+                showTimeSelect
+                timeFormat="HH:mm aa"
+                timeIntervals={15} // Adjust time intervals as needed
+                dateFormat="dd/MM/yyyy' 'HH:mm aa"
+                placeholderText="dd/mm/yyyy HH:mm"
                 required
               />
             </div>

@@ -12,7 +12,7 @@ import getProcesos from "../api/getProcesos";
 import { AgGridReact } from "ag-grid-react"; // React Data Grid Component
 import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "ag-grid-community/styles/ag-theme-quartz.css";
-import {formatDateHours, formatDateNoHours } from "../utils/utils";
+import { formatDateHours, formatDateNoHours } from "../utils/utils";
 import getPaises from "../api/getPaises";
 import getCadenas from "../api/getCadenas";
 import useToast from "../hooks/useToast";
@@ -21,8 +21,7 @@ import deleteProceso from "../api/deleteProceso";
 import EditProcessModal from "../components/EditProcessModal";
 
 const Dashboard = () => {
-
-  const {showToast} = useToast();
+  const { showToast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [rowData, setRowData] = useState([]);
   const [countries, setCountries] = useState([]);
@@ -32,29 +31,36 @@ const Dashboard = () => {
   const { logoutHandler, user } = useAuth();
 
   const ActionCellRenderer = (props) => {
-
-    const {data} = props;
+    const { data } = props;
 
     return (
       <div className="flex justify-evenly gap-3">
-      <button className=" text-center" onClick={() => editRow(data)}>
-        <FontAwesomeIcon icon={faEdit} className="text-green-900"/>
-      </button>
-      <button className=" text-center" onClick={() => deleteRow(data)}>
-        <FontAwesomeIcon icon={faTrash} className="text-red-700" />
-      </button>
+        <button className=" text-center" onClick={() => editRow(data)}>
+          <FontAwesomeIcon icon={faEdit} className="text-green-900" />
+        </button>
+        <button className=" text-center" onClick={() => deleteRow(data)}>
+          <FontAwesomeIcon icon={faTrash} className="text-red-700" />
+        </button>
       </div>
     );
   };
 
+  const dateComparator = (date1, date2) => {
+    const d1 = new Date(date1);
+    const d2 = new Date(date2);
+    return d1 - d2;
+  };
+
   const editRow = (rowData) => {
-    
     if (rowData.estado === "PEN") {
       setSelectedProcessData(rowData); // Set the selected process data
       handleClickOpen(); // Open the modal
     } else {
-      showToast('Error', 'No se puede editar un proceso en estado diferente a PENDIENTE', 'error');
-    
+      showToast(
+        "Error",
+        "No se puede editar un proceso en estado diferente a PENDIENTE",
+        "error"
+      );
     }
   };
 
@@ -63,42 +69,152 @@ const Dashboard = () => {
   };
 
   const deleteRow = (rowData) => {
-
     console.log(rowData);
-    
-    
+
     if (rowData.estado !== "PEN") {
-      showToast('Error', 'No se puede eliminar un proceso en estado diferente a PENDIENTE', 'error');
-      return;  
+      showToast(
+        "Error",
+        "No se puede eliminar un proceso en estado diferente a PENDIENTE",
+        "error"
+      );
+      return;
     }
 
-    deleteProceso(rowData.id).then((data) => {
-      showToast('Proceso eliminado', 'El proceso se ha eliminado correctamente', 'success');
-      window.location.reload();
-    }).catch((error) => {
-      showToast('Error al eliminar proceso', 'No se pudo eliminar el proceso', 'error');
-    });
-    
+    deleteProceso(rowData.id)
+      .then((data) => {
+        showToast(
+          "Proceso eliminado",
+          "El proceso se ha eliminado correctamente",
+          "success"
+        );
+        console.log(data);
+        window.location.reload();
+      })
+      .catch((error) => {
+        showToast(
+          "Error al eliminar proceso",
+          "No se pudo eliminar el proceso",
+          "error"
+        );
+      });
   };
+
+  const parseCustomDate = (dateStr) => {
+    // Extract day, month, year, hour, and minute
+    const [day, month, yearAndTime] = dateStr.split("/");
+    const [year, time] = yearAndTime.split(" ");
+    const [hour, minute] = time ? time.split(":") : [0, 0];
   
+    return new Date(year, month - 1, day, hour, minute); // Month is 0-indexed
+  };
+
   const [columnDefs, setColumnDefs] = useState([
-    { headerName: "ID", field: "id", filter: true, hide: true, flex: 1, resizable: false },
-    { headerName: "Período", field: "periodo", filter: true, flex: 2, resizable: false },
-    { 
-      headerName: "Inicio de proceso",
-      field: "fechaProceso",
-      filter: 'agDateColumnFilter', // Use the date filter
+    {
+      headerName: "ID",
+      field: "id",
+      filter: true,
+      hide: true,
+      flex: 1,
+      resizable: false,
+    },
+    {
+      headerName: "Período",
+      field: "periodo",
+      filter: true,
       flex: 2,
       resizable: false,
     },
-    { headerName: "Fecha de fin", field: "fechaFin", filter: true, hide: true, flex: 1, resizable: false },
-    { headerName: "Cadena", field: "cadena", filter: true, flex: 2, resizable: false },
-    { headerName: "País", field: "pais", filter: true, flex: 3, resizable: false },
-    { 
-      headerName: "Estado", 
-      field: "estado", 
-      //filter: 'agTextColumnFilter', // Use text filter
-      flex: 1, 
+    {
+      headerName: "Inicio de proceso",
+      field: "fechaProceso",
+      sortable: true,
+      comparator: (dateA, dateB) => {
+        const now = new Date();
+
+  // Parse date strings to consistent Date objects
+  const dA = parseCustomDate(dateA);
+  const dB = parseCustomDate(dateB);
+
+  // Check if date conversion was successful
+  if (isNaN(dA.getTime()) || isNaN(dB.getTime())) {
+    console.error("Invalid date:", { dateA, dateB });
+    return 0; // Return 0 if either date is invalid to avoid NaN issues
+  }
+
+  // Calculate time differences from now
+  const diffA = dA - now;
+  const diffB = dB - now;
+
+  // Both dates are in the future
+  if (diffA > 0 && diffB > 0) {
+    return diffA - diffB; // Smaller difference (closer future date) comes first
+  }
+
+  // Only one is in the future, prioritize the future date
+  if (diffA > 0 && diffB <= 0) return -1;
+  if (diffA <= 0 && diffB > 0) return 1;
+
+  // Both dates are in the past
+  if (diffA <= 0 && diffB <= 0) {
+    return diffA - diffB; // More recent past date comes first
+  }
+
+  return 0;
+      },
+      sort: "asc",
+      flex: 2,
+      resizable: false,
+    },
+    {
+      headerName: "Fecha de fin",
+      field: "fechaFin",
+      filter: true,
+      hide: true,
+      flex: 1,
+      resizable: false,
+    },
+    {
+      headerName: "Cadena",
+      field: "cadena",
+      filter: true,
+      flex: 2,
+      resizable: false,
+    },
+    {
+      headerName: "País",
+      field: "pais",
+      filter: true,
+      flex: 3,
+      resizable: false,
+    },
+    {
+      headerName: "Estado",
+      field: "estado",
+      sortable: true,
+      /*comparator: (valueA, valueB) => {
+        // Define ranks for each keyword
+        const getRank = (value) => {
+          if (value.includes("PEN")) return 1;
+          if (value.includes("RUN")) return 2;
+          if (value.includes("DON")) return 3;
+          return 4; // Any other values come after PEN, RUN, and DON
+        };
+  
+        // Get ranks for both values
+        const rankA = getRank(valueA);
+        const rankB = getRank(valueB);
+  
+        // Compare ranks
+        if (rankA !== rankB) {
+          return rankA - rankB; // Lower rank comes first
+        }
+  
+        // If ranks are the same, sort alphabetically
+        return valueA.localeCompare(valueB);
+      },
+      sort: "asc", // Initial sort order
+      //filter: 'agTextColumnFilter', // Use text filter*/
+      flex: 1,
       resizable: false,
     },
     {
@@ -112,7 +228,6 @@ const Dashboard = () => {
       resizable: false,
     },
   ]);
-  
 
   // Reference to the grid API
   const gridRef = useRef();
@@ -120,7 +235,9 @@ const Dashboard = () => {
   const transformData = (data) => {
     return data.map((item) => ({
       id: item.id,
-      periodo: `${formatDateNoHours(item.initialDate)} - ${formatDateNoHours(item.endDate)}`,
+      periodo: `${formatDateNoHours(item.initialDate)} - ${formatDateNoHours(
+        item.endDate
+      )}`,
       fechaProceso: formatDateHours(item.processDate),
       fechaFin: formatDateNoHours(item.endDate),
       cadena: item.nombreCadena,
@@ -129,34 +246,44 @@ const Dashboard = () => {
     }));
   };
   const handleLogout = () => {
-    showToast('Sesión cerrada', 'La sesión se ha cerrado correctamente', 'success');
+    showToast(
+      "Sesión cerrada",
+      "La sesión se ha cerrado correctamente",
+      "success"
+    );
     logoutHandler();
   };
 
   useEffect(() => {
-
     getProcesos().then((response) => {
-      if(response.status === 401) {
-        showToast('Error', 'Su sesión ha expirado', 'error');
+      if (response.status === 401) {
+        showToast("Error", "Su sesión ha expirado", "error");
         logoutHandler();
       }
 
       setRowData(transformData(response.data));
-      showToast('Procesos cargados', 'Los procesos se han cargado correctamente', 'success');
-    })
+      showToast(
+        "Procesos cargados",
+        "Los procesos se han cargado correctamente",
+        "success"
+      );
+    });
 
-    getCadenas().then((response) => {
-      setChains(response.data);
-    }).catch((error) => {
-      showToast('Error al cargar cadenas', 'No se pudieron cargar las cadenas', 'error');
-    }
-    );
-
+    getCadenas()
+      .then((response) => {
+        setChains(response.data);
+      })
+      .catch((error) => {
+        showToast(
+          "Error al cargar cadenas",
+          "No se pudieron cargar las cadenas",
+          "error"
+        );
+      });
   }, []);
-  
+
   return (
     <div className="h-screen bg-white w-full flex flex-col">
-      
       {/* Top Bar */}
       <div className="bg-red-600 p-4 flex justify-between items-center text-white w-full drop-shadow-xl">
         <div className="text-xl font-semibold">
@@ -194,15 +321,29 @@ const Dashboard = () => {
               ref={gridRef}
               pagination={true} // Enable pagination
               paginationPageSize={10} // Set page size (number of rows per page)
-              defaultColDef={{ filter: true, sortable: true}}
+              defaultColDef={{ filter: true, sortable: true }}
               rowHeight={50}
+              onGridReady={(params) => params.columnApi.applyColumnState({
+                state: [{ colId: 'fechaProceso', sort: 'asc' }],
+                applyOrder: true
+              })}
             />
           </div>
         </div>
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} chains={chains} />
-      <EditProcessModal isOpen={editModalOpen} onClose={() => setEditModalOpen(false)} process={selectedProcessData} countries={countries} chains={chains} />
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        chains={chains}
+      />
+      <EditProcessModal
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        process={selectedProcessData}
+        countries={countries}
+        chains={chains}
+      />
     </div>
   );
 };
