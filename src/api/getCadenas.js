@@ -3,7 +3,7 @@ import { BASE_URL} from "./base.api";
 async function getCadenas() {
     
     try {
-        const response = await fetch('/rrhh-comisiones/cadenas/get-cadenas',  {
+        const response = await fetch('http://localhost:8080/cadenas/get-cadenas',  {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

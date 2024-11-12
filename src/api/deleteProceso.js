@@ -2,7 +2,7 @@ import { BASE_URL } from "./base.api";
 
 async function deleteProceso(id) {
 
-    const response = await fetch(`/rrhh-comisiones/procesos/delete/${id}`, {
+    const response = await fetch(`${BASE_URL}/procesos/delete/${id}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json'

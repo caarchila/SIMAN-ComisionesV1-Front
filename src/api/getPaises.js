@@ -2,7 +2,7 @@ import { BASE_URL, BASE_URL_SERVER } from "./base.api";
 
 async function getPaises() {
     try {
-        const response = await fetch("/rrhh-comisiones/paises/get-paises", {
+        const response = await fetch(BASE_URL +"/paises/get-paises", {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

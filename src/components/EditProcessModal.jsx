@@ -115,6 +115,10 @@ const EditProcessModal = ({
       };
       updateProceso(data)
         .then((response) => {
+          if (response.status === 401) {
+            showToast("Error", "Su sesión ha expirado", "error");
+            logoutHandler();
+          }
           showToast(
             "Proceso actualizado",
             "El proceso se ha actualizado correctamente",
@@ -232,6 +236,7 @@ const EditProcessModal = ({
                     className="p-2 border rounded-md w-2/3 md:w-full bg-white"
                     dateFormat="dd/MM/yyyy"
                     required
+                    customInput={<input readOnly maxLength={0} className="p-2 border rounded-md w-2/3 md:w-full bg-white" />}
                   />
                 </div>
                 <div className="w-full flex md:flex-col justify-between md:w-full">
@@ -255,6 +260,7 @@ const EditProcessModal = ({
                     }}
                     dateFormat="dd/MM/yyyy"
                     required
+                    customInput={<input readOnly maxLength={0} className="p-2 border rounded-md w-2/3 md:w-full bg-white" />}
                   />
                 </div>
               </div>
@@ -290,6 +296,7 @@ const EditProcessModal = ({
                 dateFormat="dd/MM/yyyy' 'HH:mm aa"
                 placeholderText="dd/mm/yyyy HH:mm"
                 required
+                customInput={<input readOnly maxLength={0} className="p-2 border rounded-md w-2/3 md:w-full bg-white" />}
               />
             </div>
 

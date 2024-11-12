@@ -4,7 +4,6 @@ import {
   faAdd,
   faEdit,
   faSignOutAlt,
-  faTimes,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "../components/AddProcessModal";
@@ -13,12 +12,12 @@ import { AgGridReact } from "ag-grid-react"; // React Data Grid Component
 import "ag-grid-community/styles/ag-grid.css"; // Mandatory CSS required by the Data Grid
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import { formatDateHours, formatDateNoHours } from "../utils/utils";
-import getPaises from "../api/getPaises";
 import getCadenas from "../api/getCadenas";
 import useToast from "../hooks/useToast";
 import { useAuth } from "../context/UseAuth";
 import deleteProceso from "../api/deleteProceso";
 import EditProcessModal from "../components/EditProcessModal";
+import { AG_GRID_LOCALE_ES } from "@ag-grid-community/locale";
 
 const Dashboard = () => {
   const { showToast } = useToast();
@@ -28,9 +27,12 @@ const Dashboard = () => {
   const [chains, setChains] = useState([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedProcessData, setSelectedProcessData] = useState({});
-  const { logoutHandler, user } = useAuth();
+  const { logoutHandler } = useAuth();
 
+
+  //
   const ActionCellRenderer = (props) => {
+
     const { data } = props;
 
     return (
@@ -43,12 +45,6 @@ const Dashboard = () => {
         </button>
       </div>
     );
-  };
-
-  const dateComparator = (date1, date2) => {
-    const d1 = new Date(date1);
-    const d2 = new Date(date2);
-    return d1 - d2;
   };
 
   const editRow = (rowData) => {
@@ -99,6 +95,13 @@ const Dashboard = () => {
       });
   };
 
+  const gridOptions = {
+    localeText: {
+      ...AG_GRID_LOCALE_ES,
+      noRowsToShow: '', // Set to an empty string to disable, or add a custom message here
+    },
+  };
+
   const parseCustomDate = (dateStr) => {
     // Extract day, month, year, hour, and minute
     const [day, month, yearAndTime] = dateStr.split("/");
@@ -130,37 +133,38 @@ const Dashboard = () => {
       sortable: true,
       comparator: (dateA, dateB) => {
         const now = new Date();
-
-  // Parse date strings to consistent Date objects
-  const dA = parseCustomDate(dateA);
-  const dB = parseCustomDate(dateB);
-
-  // Check if date conversion was successful
-  if (isNaN(dA.getTime()) || isNaN(dB.getTime())) {
-    console.error("Invalid date:", { dateA, dateB });
-    return 0; // Return 0 if either date is invalid to avoid NaN issues
-  }
-
-  // Calculate time differences from now
-  const diffA = dA - now;
-  const diffB = dB - now;
-
-  // Both dates are in the future
-  if (diffA > 0 && diffB > 0) {
-    return diffA - diffB; // Smaller difference (closer future date) comes first
-  }
-
-  // Only one is in the future, prioritize the future date
-  if (diffA > 0 && diffB <= 0) return -1;
-  if (diffA <= 0 && diffB > 0) return 1;
-
-  // Both dates are in the past
-  if (diffA <= 0 && diffB <= 0) {
-    return diffA - diffB; // More recent past date comes first
-  }
-
-  return 0;
+      
+        // Parse date strings to consistent Date objects
+        const dA = parseCustomDate(dateA);
+        const dB = parseCustomDate(dateB);
+      
+        // Check if date conversion was successful
+        if (isNaN(dA.getTime()) || isNaN(dB.getTime())) {
+          console.error("Invalid date:", { dateA, dateB });
+          return 0; // Return 0 if either date is invalid to avoid NaN issues
+        }
+      
+        // Calculate time differences from now
+        const diffA = dA - now;
+        const diffB = dB - now;
+      
+        // Both dates are in the future
+        if (diffA > 0 && diffB > 0) {
+          return diffA - diffB; // Smaller difference (closer future date) comes first
+        }
+      
+        // Only one is in the future, prioritize the future date
+        if (diffA > 0 && diffB <= 0) return -1;
+        if (diffA <= 0 && diffB > 0) return 1;
+      
+        // Both dates are in the past
+        if (diffA <= 0 && diffB <= 0) {
+          return diffB - diffA; // More recent past date comes first
+        }
+      
+        return 0;
       },
+      
       sort: "asc",
       flex: 2,
       resizable: false,
@@ -218,7 +222,7 @@ const Dashboard = () => {
       resizable: false,
     },
     {
-      headerName: "Actions",
+      headerName: "Acciones",
       cellRenderer: ActionCellRenderer,
       cellRendererParams: {
         editRow: editRow,
@@ -245,6 +249,8 @@ const Dashboard = () => {
       estado: item.status,
     }));
   };
+
+  // Logout handler
   const handleLogout = () => {
     showToast(
       "Sesión cerrada",
@@ -271,6 +277,10 @@ const Dashboard = () => {
 
     getCadenas()
       .then((response) => {
+        if (response.status === 401) {
+          showToast("Error", "Su sesión ha expirado", "error");
+          logoutHandler();
+        }
         setChains(response.data);
       })
       .catch((error) => {
@@ -327,6 +337,7 @@ const Dashboard = () => {
                 state: [{ colId: 'fechaProceso', sort: 'asc' }],
                 applyOrder: true
               })}
+              gridOptions={gridOptions}
             />
           </div>
         </div>

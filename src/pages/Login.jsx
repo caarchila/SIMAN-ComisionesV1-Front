@@ -28,7 +28,7 @@ const Login = () => {
 
   useEffect(() => {
 
-    console.log('borrado con endpoint nuevo xD');
+    console.log('version 11/12/2024 5pm');
     
     const session = sessionStorage.getItem('session');
 

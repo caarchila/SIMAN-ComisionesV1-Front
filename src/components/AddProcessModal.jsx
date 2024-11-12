@@ -69,7 +69,11 @@ const AddProcessModal = ({ isOpen, onClose, chains }) => {
 
       postProceso(data)
         .then((response) => {
-          console.log(response);
+
+          if (response.status === 401) {
+            showToast("Error", "Su sesión ha expirado", "error");
+            logoutHandler();
+          }
 
           showToast(
             "Proceso creado",
@@ -191,11 +195,18 @@ const AddProcessModal = ({ isOpen, onClose, chains }) => {
                   <DatePicker
                     locale="es" // Set locale to Spanish
                     selected={startDate ? parseISO(startDate) : null} // Only parse if there's a valid date
-                    onChange={handleDateInput}
+                    
+                    onChange={(date) => {
+                      if (date && !isNaN(date.getTime())) {
+                        // check if the date is valid
+                        setStartDate(date.toISOString().split("T")[0]); // format as "YYYY-MM-DD" if needed
+                      }
+                    }}
                     dateFormat="dd/MM/yyyy" // Display format: dd/mm/yyyy
                     placeholderText="dd/mm/yyyy" // Placeholder text
                     className="p-2 border rounded-md w-2/3 md:w-full bg-white"
                     required
+                    customInput={<input readOnly maxLength={0} className="p-2 border rounded-md w-2/3 md:w-full bg-white" />}
                   />
                 </div>
                 <div className="w-full flex md:flex-col justify-between md:w-full">
@@ -208,11 +219,17 @@ const AddProcessModal = ({ isOpen, onClose, chains }) => {
                   <DatePicker
                     locale="es" // Set locale to Spanish
                     selected={endDate ? parseISO(endDate) : null} // Only parse if there's a valid date
-                    onChange={(date) => setEndDate(format(date, "yyyy-MM-dd"))}
+                    onChange={(date) => {
+                      if (date && !isNaN(date.getTime())) {
+                        // check if the date is valid
+                        setStartDate(date.toISOString().split("T")[0]); // format as "YYYY-MM-DD" if needed
+                      }
+                    }}
                     dateFormat="dd/MM/yyyy" // Display format: dd/mm/yyyy
                     placeholderText="dd/mm/yyyy"
                     className="p-2 border rounded-md w-2/3 md:w-full bg-white"
                     required
+                    customInput={<input readOnly maxLength={0} className="p-2 border rounded-md w-2/3 md:w-full bg-white" />}
                   />
                 </div>
               </div>
@@ -239,6 +256,7 @@ const AddProcessModal = ({ isOpen, onClose, chains }) => {
                 placeholderText="dd/mm/yyyy HH:mm"
                 className="p-2 border rounded-md bg-white full-width" // Ensure DatePicker takes full width
                 required
+                customInput={<input readOnly maxLength={0} className="p-2 border rounded-md w-2/3 md:w-full bg-white" />}
               />
             </div>
 
