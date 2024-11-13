@@ -8,7 +8,7 @@ async function getProceso(id) {
     const requestBody = { id }; // This will create { id: 213 }
 
 
-    const response = await fetch(BASE_URL + "/procesos/procesoById", {
+    const response = await fetch("/rrhh-comisiones/procesos/procesoById", {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

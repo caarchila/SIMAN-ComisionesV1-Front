@@ -78,6 +78,12 @@ const Dashboard = () => {
 
     deleteProceso(rowData.id)
       .then((data) => {
+
+        if (data.status === 401) {
+          window.location.reload();
+          showToast("Error", "Su sesión ha expirado", "error");
+          logoutHandler();
+        }
         showToast(
           "Proceso eliminado",
           "El proceso se ha eliminado correctamente",
@@ -262,6 +268,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     getProcesos().then((response) => {
+      console.log(response);
       if (response.status === 401) {
         showToast("Error", "Su sesión ha expirado", "error");
         logoutHandler();
@@ -277,10 +284,6 @@ const Dashboard = () => {
 
     getCadenas()
       .then((response) => {
-        if (response.status === 401) {
-          showToast("Error", "Su sesión ha expirado", "error");
-          logoutHandler();
-        }
         setChains(response.data);
       })
       .catch((error) => {

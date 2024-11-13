@@ -2,7 +2,7 @@ import { BASE_URL, BASE_URL_SERVER } from "./base.api";
 
 const logout = async () => {
     try {
-        const response = await fetch(BASE_URL + "/auth/logout",  {
+        const response = await fetch("/rrhh-comisiones/auth/logout",  {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

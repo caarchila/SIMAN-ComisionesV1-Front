@@ -69,8 +69,9 @@ const AddProcessModal = ({ isOpen, onClose, chains }) => {
 
       postProceso(data)
         .then((response) => {
-
+          console.log(response.status);
           if (response.status === 401) {
+            window.location.href = "/rrhh-comisiones";
             showToast("Error", "Su sesión ha expirado", "error");
             logoutHandler();
           }
@@ -222,7 +223,7 @@ const AddProcessModal = ({ isOpen, onClose, chains }) => {
                     onChange={(date) => {
                       if (date && !isNaN(date.getTime())) {
                         // check if the date is valid
-                        setStartDate(date.toISOString().split("T")[0]); // format as "YYYY-MM-DD" if needed
+                        setEndDate(date.toISOString().split("T")[0]); // format as "YYYY-MM-DD" if needed
                       }
                     }}
                     dateFormat="dd/MM/yyyy" // Display format: dd/mm/yyyy

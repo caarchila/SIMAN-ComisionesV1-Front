@@ -28,12 +28,11 @@ const Login = () => {
 
   useEffect(() => {
 
-    console.log('version 11/12/2024 5pm');
+    console.log('version 11/13/2024');
     
     const session = sessionStorage.getItem('session');
 
     if (session) {
-      sessionStorage.removeItem('session');
       clearSession();
     }
 

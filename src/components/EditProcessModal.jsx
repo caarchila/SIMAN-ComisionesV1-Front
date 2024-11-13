@@ -112,10 +112,12 @@ const EditProcessModal = ({
         initialDate: handleDateChange(startDate),
         endDate: handleDateChange(endDate),
         createId: localStorage.getItem("user"),
+        lastUpdateId: localStorage.getItem("user"),
       };
       updateProceso(data)
         .then((response) => {
           if (response.status === 401) {
+            window.location.href = "/rrhh-comisiones";
             showToast("Error", "Su sesión ha expirado", "error");
             logoutHandler();
           }
@@ -292,7 +294,7 @@ const EditProcessModal = ({
                 className="p-2 border rounded-md bg-white full-width"
                 showTimeSelect
                 timeFormat="HH:mm aa"
-                timeIntervals={15} // Adjust time intervals as needed
+                timeIntervals={1} // Adjust time intervals as needed
                 dateFormat="dd/MM/yyyy' 'HH:mm aa"
                 placeholderText="dd/mm/yyyy HH:mm"
                 required

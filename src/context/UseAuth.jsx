@@ -27,8 +27,7 @@ export const AuthProvider = ({ children }) => {
 
         try {
             logout();
-            sessionStorage.removeItem('session');
-            localStorage.removeItem('user');
+            clearSession();
             setTimeout(() => {
                 window.location.href = '/rrhh-comisiones/';
             }, 2000);
